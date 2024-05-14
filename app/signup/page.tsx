@@ -1,6 +1,12 @@
 'use client';
 import { SignupForm } from '@/components/SignUp';
-import { Modal, ModalContent, Button, useDisclosure } from '@nextui-org/react';
+import {
+  Modal,
+  ModalContent,
+  Button,
+  useDisclosure,
+  Link,
+} from '@nextui-org/react';
 import { HeartFilledIcon } from '@/components/icons';
 
 export default function SignUpPage() {
@@ -10,9 +16,8 @@ export default function SignUpPage() {
       <Button
         onPress={onOpen}
         className="text-sm font-normal text-default-600 bg-default-100"
-        startContent={
-          <HeartFilledIcon className="text-danger" variant="flat" />
-        }
+        variant="flat"
+        startContent={<HeartFilledIcon className="text-danger" />}
       >
         Sign up
       </Button>
