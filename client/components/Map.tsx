@@ -27,9 +27,10 @@ import {
 } from '@googlemaps/extended-component-library/react'; // Adjust import path as necessary
 
 import { PlaceAutocompleteClassic } from './PlaceAutocompleteClassic'; // Adjust the import path as necessary
+import axios from 'axios';
 
 export default function Maps() {
-  const center = { lat: 23.412182, lng: 85.439435 };
+  const center = { lat: 23.3507, lng: 85.31377 };
   const [initialCenter, setInitialCenter] = useState<{
     lat: number;
     lng: number;
@@ -84,25 +85,98 @@ export default function Maps() {
     }
   }, [origin]);
 
-  // useEffect(() => {
-  //   if (origin && !destination) {
-  //     fetchNearestChargingStation(origin).then((nearestStation) => {
-  //       if (nearestStation) {
-  //         setDestination({
-  //           lat: nearestStation.location.latitude,
-  //           lng: nearestStation.location.longitude,
-  //         });
-  //       }
-  //     });
-  //   }
-  // }, [origin, destination]);
+  useEffect(() => {
+    if (origin && !destination) {
+      fetchNearestChargingStation(origin).then((nearestStation) => {
+        if (nearestStation) {
+          setDestination({
+            lat: nearestStation.location.latitude,
+            lng: nearestStation.location.longitude,
+          });
+        }
+      });
+    }
+  }, [origin, destination]);
+
+  const fetchNearestChargingStation = async (origin) => {
+    try {
+      const response = await fetch(
+        'https://places.googleapis.com/v1/places:searchNearby',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Goog-Api-Key': process.env
+              .NEXT_PUBLIC_GOOGLE_MAP_API_KEY as string,
+            'X-Goog-FieldMask':
+              'places.id,places.location,places.name,places.displayName,places.evChargeOptions,places.formattedAddress,places.rating',
+          },
+          body: JSON.stringify({
+            includedTypes: ['electric_vehicle_charging_station'],
+            maxResultCount: 10,
+            locationRestriction: {
+              circle: {
+                center: {
+                  latitude: origin.lat,
+                  longitude: origin.lng,
+                },
+                radius: 20000.0,
+              },
+            },
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Charging Stations:', data); // Log the results to verify data
+
+      return findNearestStation(origin, data.places);
+    } catch (error) {
+      console.error('Error fetching charging stations:', error);
+    }
+  };
+
+  const findNearestStation = (origin, stations) => {
+    let nearestStation = null;
+    let minDistance = Infinity;
+
+    stations.forEach((station) => {
+      const distance = getDistance(origin, {
+        lat: station.location.latitude,
+        lng: station.location.longitude,
+      });
+
+      if (distance < minDistance) {
+        nearestStation = station;
+        minDistance = distance;
+      }
+    });
+
+    return nearestStation;
+  };
+
+  const getDistance = (origin, destination) => {
+    const R = 6371e3; // metres
+    const φ1 = (origin.lat * Math.PI) / 180; // φ, λ in radians
+    const φ2 = (destination.lat * Math.PI) / 180;
+    const Δφ = ((destination.lat - origin.lat) * Math.PI) / 180;
+    const Δλ = ((destination.lng - origin.lng) * Math.PI) / 180;
+
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const distance = R * c; // in metres
+    return distance;
+  };
 
   return (
     <div className="relative h-[90vh] w-[100vw]">
-      <APILoader
-        apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY as string}
-        solutionChannel="GMP_GCC_placeoverview_v1_xl"
-      />
       <APIProvider
         apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY as string}
       >
@@ -222,6 +296,8 @@ function NearbyChargingStations({
   const [selectedStation, setSelectedStation] = useState<any | null>(null);
   const { isOpen, onOpen, onOpenChange } = useDisclosure(); // Assuming useDisclosure is a custom hook or part of your UI library
   const map = useMap(); // Assuming useMap is a custom hook to get the map instance
+  const [queue, setQueue] = useState<number>(0);
+  const [stationData, setStationData] = useState<any>(null);
 
   useEffect(() => {
     const fetchChargingStations = async () => {
@@ -272,8 +348,11 @@ function NearbyChargingStations({
   }, [map, center]);
 
   // Function to handle marker click
-  const handleMarkerClick = (station: any) => {
+  const handleMarkerClick = async (station: any) => {
+    console.log(station);
     setSelectedStation(station);
+    const stationData = await fetchStationData(station.id);
+    setStationData(stationData);
   };
 
   // Function to close info window
@@ -311,6 +390,73 @@ function NearbyChargingStations({
         return 'Type 2';
       default:
         return type;
+    }
+  };
+  const fetchStationData = async (placeId: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      console.log(token);
+      const response = await axios.get(
+        `http://localhost:5000/api/stations/station/place/${placeId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.data;
+      setQueue(data.queue);
+      return data;
+    } catch (error) {
+      console.error('Error fetching station data:', error);
+    }
+  };
+
+  const fetchUserData = async (token: string) => {
+    try {
+      const response = await axios.post(
+        'http://localhost:5000/api/auth/validate-token',
+        { token }
+      );
+      console.log(response);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  };
+
+  const handleCheckIn = async () => {
+    const token = localStorage.getItem('token');
+    console.log('token', token);
+    if (!token) {
+      console.error('No token found');
+      return;
+    }
+
+    const userData = await fetchUserData(token);
+    if (!userData) {
+      console.error('Invalid token');
+      return;
+    }
+    console.log('userdata', userData);
+    const user = userData.user;
+    const checkInData = {
+      placeId: selectedStation.id,
+      email: userData.user.email,
+      vehicleType: userData.user.vehicleType,
+    };
+
+    console.log('checkedInData', checkInData);
+
+    try {
+      await axios.post('http://localhost:5000/api/stations/add', checkInData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      alert('Check-in successful');
+    } catch (error) {
+      console.error('Error checking in:', error);
     }
   };
 
@@ -366,6 +512,14 @@ function NearbyChargingStations({
                     )}
                   </ul>
                 )}
+              </div>
+            )}
+            {stationData && (
+              <div>
+                <p className="font-semibold text-medium text-wrap">
+                  Queue: {queue}
+                </p>
+                <Button onPress={handleCheckIn}>Check In</Button>
               </div>
             )}
             <Button onPress={onOpen} className="mt-2">

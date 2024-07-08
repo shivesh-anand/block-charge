@@ -19,6 +19,7 @@ export function StationSignupForm() {
     password: '',
     location: '',
     chargers: [],
+    placeId: '',
   });
   const [error, setError] = useState<string | null>(null);
 
@@ -30,6 +31,7 @@ export function StationSignupForm() {
       setFormData((prevData) => ({
         ...prevData,
         location: place.formatted_address || '',
+        placeId: place.place_id || '',
       }));
       console.log('Selected Place ID:', place.place_id);
     }
@@ -52,7 +54,7 @@ export function StationSignupForm() {
       const storedToken = localStorage.getItem('token');
       if (storedToken) {
         console.log('Token Stored Successfully', storedToken);
-        router.push('/map');
+        router.push('/dashboard');
       } else {
         console.error('Failed to store token');
       }

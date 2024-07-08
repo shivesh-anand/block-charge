@@ -48,7 +48,8 @@ export const registerUser = async (req: Request, res: Response) => {
 };
 
 export const registerStation = async (req: Request, res: Response) => {
-  const { firstName, lastName, email, password, location, chargers } = req.body;
+  const { firstName, lastName, email, password, location, chargers, placeId } =
+    req.body;
 
   try {
     const stationExists = await Station.findOne({ email });
@@ -67,6 +68,7 @@ export const registerStation = async (req: Request, res: Response) => {
       password: hashedPassword,
       location,
       chargers,
+      placeId,
     });
 
     if (station) {
@@ -77,6 +79,7 @@ export const registerStation = async (req: Request, res: Response) => {
         email: station.email,
         location: station.location,
         chargers: station.chargers,
+        placeId: station.placeId,
         token: generateToken(station._id as string, 'station'),
       });
     } else {

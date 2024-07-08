@@ -4,16 +4,20 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-  Input,
 } from '@nextui-org/react';
 import { BatteryIcon } from './icons';
 import IOTCard from './IOTCard';
+import { toast } from 'react-toastify';
 
 interface BatteryButtonProps {
   level: number; // Battery level from 0 to 100
+  onChangeLevel: (level: number) => void; // Function to change battery level
 }
 
-const BatteryButton: React.FC<BatteryButtonProps> = ({ level }) => {
+const BatteryButton: React.FC<BatteryButtonProps> = ({
+  level,
+  onChangeLevel,
+}) => {
   const getGradientClass = (level: number) => {
     if (level > 75) return 'from-green-400 to-green-600';
     if (level > 50) return 'from-yellow-400 to-yellow-600';
@@ -24,13 +28,7 @@ const BatteryButton: React.FC<BatteryButtonProps> = ({ level }) => {
   const gradientClass = getGradientClass(level);
 
   return (
-    <Popover
-      placement="bottom"
-      showArrow
-      offset={10}
-      backdrop="blur"
-      shadow="lg"
-    >
+    <Popover placement="bottom" showArrow offset={10} shadow="lg">
       <PopoverTrigger>
         <Button
           startContent={<BatteryIcon />}
@@ -42,7 +40,7 @@ const BatteryButton: React.FC<BatteryButtonProps> = ({ level }) => {
       </PopoverTrigger>
       <PopoverContent className="w-[240px]">
         <div className="px-1 py-2 w-full">
-          <IOTCard />
+          <IOTCard currentLevel={level} onChangeLevel={onChangeLevel} />
         </div>
       </PopoverContent>
     </Popover>

@@ -21,7 +21,7 @@ export function StationLoginForm() {
       );
       console.log('Logged In Successfully', response.data);
       localStorage.setItem('token', response.data.token);
-      router.push('/map');
+      router.push('/dashboard');
     } catch (error) {
       console.log('Error Logging In', error);
     }
