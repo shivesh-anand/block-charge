@@ -19,13 +19,12 @@ import NextLink from "next/link";
 import { GithubIcon } from "@/components/icons";
 import { ThemeSwitch } from "@/components/theme-switch";
 
+import { logout } from "@/redux/slice/authSlice";
 import { Button } from "@nextui-org/button";
 import { IconLogin2, IconLogout2 } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "@/redux/slice/authSlice";
 
 interface NavItem {
   href: string;

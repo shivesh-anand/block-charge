@@ -1,12 +1,22 @@
 "use client";
 import BatteryButton from "@/components/BatteryButton";
-import withAuth from "@/components/withAuth";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 
 const Maps = dynamic(() => import("@/components/Map"), { ssr: false });
 
 function MapsPage() {
+  const router = useRouter();
+  const isAuthenticated = useSelector(
+    (state: any) => state.auth.isAuthenticated
+  );
+
+  if (!isAuthenticated) {
+    router.replace("/login");
+  }
+
   const [batteryLevel, setBatteryLevel] = useState(50);
   return (
     <section className="flex flex-col items-center justify-center gap-4">
