@@ -3,7 +3,6 @@ import { Navbar } from "@/components/navbar";
 import { fontSans } from "@/config/fonts";
 import { siteConfig } from "@/config/site";
 import "@/styles/globals.css";
-import { Link } from "@nextui-org/link";
 import clsx from "clsx";
 import { Metadata, Viewport } from "next";
 import { Toaster } from "react-hot-toast";

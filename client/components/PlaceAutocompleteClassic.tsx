@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { useMapsLibrary } from '@vis.gl/react-google-maps';
+import { useMapsLibrary } from "@vis.gl/react-google-maps";
+import React, { useEffect, useRef, useState } from "react";
 
 interface Props {
   placeholder: string;
@@ -13,13 +13,13 @@ export const PlaceAutocompleteClassic: React.FC<Props> = ({
   const [placeAutocomplete, setPlaceAutocomplete] =
     useState<google.maps.places.Autocomplete | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const places = useMapsLibrary('places');
+  const places = useMapsLibrary("places");
 
   useEffect(() => {
     if (!places || !inputRef.current) return;
 
     const options = {
-      fields: ['geometry', 'name', 'formatted_address', 'place_id'],
+      fields: ["geometry", "name", "formatted_address", "place_id"],
     };
 
     setPlaceAutocomplete(new places.Autocomplete(inputRef.current, options));
@@ -28,7 +28,7 @@ export const PlaceAutocompleteClassic: React.FC<Props> = ({
   useEffect(() => {
     if (!placeAutocomplete) return;
 
-    placeAutocomplete.addListener('place_changed', () => {
+    placeAutocomplete.addListener("place_changed", () => {
       onPlaceSelect(placeAutocomplete.getPlace());
     });
   }, [onPlaceSelect, placeAutocomplete]);

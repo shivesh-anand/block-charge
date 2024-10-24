@@ -1,16 +1,16 @@
-import React from "react";
-import { BatteryIcon } from "./icons";
-import IOTCard from "./IOTCard";
 import {
   Button,
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@nextui-org/react";
+import React from "react";
+import { BatteryIcon } from "./icons.tsx";
+import IOTCard from "./IOTCard.tsx";
 
 interface BatteryButtonProps {
-  level: number; // Battery level from 0 to 100
-  onChangeLevel: (level: number) => void; // Function to change battery level
+  level: number;
+  onChangeLevel: (level: number) => void;
 }
 
 const BatteryButton: React.FC<BatteryButtonProps> = ({

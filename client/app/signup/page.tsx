@@ -1,13 +1,19 @@
 "use client";
-import { StationIcon, UserIcon } from "@/components/icons";
-import StationSignUpForm from "@/components/StationSignUp";
-import UserSignUpForm from "@/components/UserSignUp";
-import { Card, CardBody, CardFooter, CardHeader } from "@nextui-org/card";
-import { Link } from "@nextui-org/link";
-import { Tab, Tabs } from "@nextui-org/tabs";
+import { StationIcon, UserIcon } from "@/components/icons.tsx";
+import StationSignUpForm from "@/components/StationSignUp.tsx";
+import UserSignUpForm from "@/components/UserSignUp.tsx";
+import {
+  Tab,
+  Link,
+  Tabs,
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+} from "@nextui-org/react";
 const LoginPage = () => {
   return (
-    <Card className="justify-center items-center px-4" fullWidth={true}>
+    <Card className="justify-center items-center px-4">
       <CardHeader className="flex flex-col gap-3 text-center">
         <h1 className="font-black text-xl ">Sign Up to BlockCharge</h1>
       </CardHeader>
@@ -42,10 +48,9 @@ const LoginPage = () => {
       <CardFooter className="justify-center">
         Already have an account?
         <Link
-          showAnchorIcon
           className="px-4 font-bold text-lg"
-          color="foreground"
           href="/login"
+          color="foreground"
         >
           Log In
         </Link>

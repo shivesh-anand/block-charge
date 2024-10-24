@@ -3,9 +3,15 @@
 import { StationIcon, UserIcon } from "@/components/icons";
 import StationLoginForm from "@/components/StationLogin";
 import UserLoginForm from "@/components/UserLogin";
-import { Card, CardBody, CardFooter, CardHeader } from "@nextui-org/card";
-import { Link } from "@nextui-org/link";
-import { Tab, Tabs } from "@nextui-org/tabs";
+import {
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  Link,
+  Tab,
+  Tabs,
+} from "@nextui-org/react";
 
 const LoginPage = () => {
   return (

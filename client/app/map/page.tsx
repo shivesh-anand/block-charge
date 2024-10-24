@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 
-const Maps = dynamic(() => import("@/components/Map"), { ssr: false });
+const Maps = dynamic(() => import("@/components/Map.tsx"), { ssr: false });
 
 function MapsPage() {
   const router = useRouter();

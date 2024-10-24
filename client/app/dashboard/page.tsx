@@ -1,9 +1,8 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import axios from "axios";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/utils/cn";
+import React, { useState } from "react";
 
 interface QueueItem {
   _id: string;

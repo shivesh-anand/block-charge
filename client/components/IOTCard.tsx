@@ -1,13 +1,13 @@
-import React, { useEffect } from 'react';
 import {
   Card,
-  CardHeader,
   CardBody,
   CardFooter,
+  CardHeader,
   Divider,
   Input,
-} from '@nextui-org/react';
-import { ConnectedIcon } from './icons';
+} from "@nextui-org/react";
+import React from "react";
+import { ConnectedIcon } from "./icons";
 
 interface IOTCardProps {
   currentLevel: number;
@@ -20,13 +20,11 @@ const IOTCard: React.FC<IOTCardProps> = ({ currentLevel, onChangeLevel }) => {
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
 
-    // Handle empty input case
-    if (value === '') {
-      onChangeLevel(0); // Set a default value, e.g., 0
+    if (value === "") {
+      onChangeLevel(0);
       return;
     }
 
-    // Check if the value is a valid number and within the range of 0-100
     const numericValue = parseInt(value);
     if (!isNaN(numericValue) && numericValue >= 0 && numericValue <= 100) {
       onChangeLevel(numericValue);
@@ -52,7 +50,7 @@ const IOTCard: React.FC<IOTCardProps> = ({ currentLevel, onChangeLevel }) => {
           type="number"
           label="Battery Level"
           placeholder="Enter Battery Level between 0-100"
-          value={currentLevel === 0 ? '' : currentLevel.toString()} // Display empty string if level is 0, otherwise display current level
+          value={currentLevel === 0 ? "" : currentLevel.toString()}
           onChange={handleInputChange}
         />
       </CardFooter>

@@ -1,16 +1,16 @@
 "use client";
 
+import { login } from "@/redux/slice/authSlice";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Select, SelectItem } from "@nextui-org/select";
 import { APIProvider } from "@vis.gl/react-google-maps";
-import { PlaceAutocompleteClassic } from "./PlaceAutocompleteClassic";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import toast from "react-hot-toast";
-import { login } from "@/redux/slice/authSlice";
+import { useDispatch } from "react-redux";
+import { PlaceAutocompleteClassic } from "./PlaceAutocompleteClassic";
 
 const StationSignUpForm = () => {
   const [email, setEmail] = useState("");
