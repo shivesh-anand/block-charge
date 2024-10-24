@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
-import Station from '../models/Station.js';
-import User from '../models/User.js';
+import { Request, Response } from "express";
+import Station from "../models/stationModel.js";
+import User from "../models/userModel.js";
 
 export const verifyCheckIn = async (req: Request, res: Response) => {
   const { stationId, userId } = req.body;
@@ -11,12 +11,12 @@ export const verifyCheckIn = async (req: Request, res: Response) => {
 
     if (station && user) {
       // Implement your check-in logic here
-      res.json({ message: 'Check-in verified successfully' });
+      res.json({ message: "Check-in verified successfully" });
     } else {
-      res.status(404).json({ message: 'Station or user not found' });
+      res.status(404).json({ message: "Station or user not found" });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -25,11 +25,11 @@ export const getCurrentStation = async (req: Request, res: Response) => {
     if (req.user) {
       res.status(200).json(req.user);
     } else {
-      res.status(404).json({ message: 'Station not found' });
+      res.status(404).json({ message: "Station not found" });
     }
   } catch (error) {
-    console.error('Error fetching user details:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error fetching user details:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -40,7 +40,7 @@ export const updateStation = async (req: Request, res: Response) => {
     // Check if station exists
     const station = await Station.findById(req.user._id);
     if (!station) {
-      return res.status(404).json({ message: 'Station not found' });
+      return res.status(404).json({ message: "Station not found" });
     }
 
     // Update station details with provided fields
@@ -55,10 +55,10 @@ export const updateStation = async (req: Request, res: Response) => {
 
     res
       .status(200)
-      .json({ message: 'Station details updated successfully', station });
+      .json({ message: "Station details updated successfully", station });
   } catch (error) {
-    console.error('Error updating station details:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error updating station details:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -71,11 +71,11 @@ export const getStationByPlaceId = async (req: Request, res: Response) => {
     if (station) {
       res.status(200).json(station);
     } else {
-      res.status(404).json({ message: 'Station not found' });
+      res.status(404).json({ message: "Station not found" });
     }
   } catch (error) {
-    console.error('Error fetching station by placeId:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error fetching station by placeId:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -86,7 +86,7 @@ export const addUserToQueue = async (req: Request, res: Response) => {
     const station = await Station.findOne({ placeId });
 
     if (!station) {
-      return res.status(404).json({ message: 'Station not found' });
+      return res.status(404).json({ message: "Station not found" });
     }
 
     const newQueueItem = {
@@ -103,10 +103,10 @@ export const addUserToQueue = async (req: Request, res: Response) => {
 
     res
       .status(201)
-      .json({ message: 'User added to queue successfully', station });
+      .json({ message: "User added to queue successfully", station });
   } catch (error) {
-    console.error('Error adding user to queue:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error adding user to queue:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -118,13 +118,13 @@ export const getQueueItems = async (req: Request, res: Response) => {
     const station = await Station.findOne({ placeId });
 
     if (!station) {
-      return res.status(404).json({ message: 'Station not found' });
+      return res.status(404).json({ message: "Station not found" });
     }
 
     res.status(200).json({ queueItems: station.queueItems || [] });
   } catch (error) {
-    console.error('Error fetching queue items:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error fetching queue items:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -137,7 +137,7 @@ export const deleteQueueItems = async (req: Request, res: Response) => {
     const station = await Station.findOne({ placeId });
 
     if (!station) {
-      return res.status(404).json({ message: 'Station not found' });
+      return res.status(404).json({ message: "Station not found" });
     }
 
     station.queueItems = station.queueItems?.filter(
@@ -148,9 +148,9 @@ export const deleteQueueItems = async (req: Request, res: Response) => {
 
     res
       .status(200)
-      .json({ message: 'Queue items deleted successfully', station });
+      .json({ message: "Queue items deleted successfully", station });
   } catch (error) {
-    console.error('Error deleting queue items:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error deleting queue items:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

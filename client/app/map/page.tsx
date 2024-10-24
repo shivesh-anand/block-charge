@@ -1,10 +1,10 @@
-'use client';
-import BatteryButton from '@/components/BatteryButton';
-import withAuth from '@/components/withAuth';
-import dynamic from 'next/dynamic';
-import { useState } from 'react';
+"use client";
+import BatteryButton from "@/components/BatteryButton";
+import withAuth from "@/components/withAuth";
+import dynamic from "next/dynamic";
+import { useState } from "react";
 
-const Maps = dynamic(() => import('@/components/Map'), { ssr: false });
+const Maps = dynamic(() => import("@/components/Map"), { ssr: false });
 
 function MapsPage() {
   const [batteryLevel, setBatteryLevel] = useState(50);
@@ -24,4 +24,4 @@ function MapsPage() {
   );
 }
 
-export default withAuth(MapsPage);
+export default MapsPage;

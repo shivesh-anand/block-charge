@@ -6,6 +6,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   vehicleType: string;
+  vehicleNumber: string;
   stake: number;
   createdAt: Date;
 }
@@ -17,6 +18,7 @@ const userSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     vehicleType: { type: String, required: true },
+    vehicleNumber: { type: String, required: true },
     stake: { type: Number, default: 0 },
   },
   {

@@ -1,52 +1,80 @@
+"use client";
+import { Link } from "@nextui-org/link";
 import {
-  Navbar as NextUINavbar,
-  NavbarContent,
-  NavbarMenu,
-  NavbarMenuToggle,
   NavbarBrand,
+  NavbarContent,
   NavbarItem,
+  NavbarMenu,
   NavbarMenuItem,
-} from '@nextui-org/navbar';
-import { Kbd } from '@nextui-org/kbd';
-import { Link } from '@nextui-org/link';
-import { Input } from '@nextui-org/input';
-import { Image } from '@nextui-org/image';
+  NavbarMenuToggle,
+  Navbar as NextUINavbar,
+} from "@nextui-org/navbar";
 
-import { link as linkStyles } from '@nextui-org/theme';
+import { link as linkStyles } from "@nextui-org/theme";
 
-import { siteConfig } from '@/config/site';
-import NextLink from 'next/link';
-import clsx from 'clsx';
+import { siteConfig } from "@/config/site";
+import clsx from "clsx";
+import NextLink from "next/link";
 
-import { ThemeSwitch } from '@/components/theme-switch';
-import { GithubIcon, SearchIcon } from '@/components/icons';
+import { GithubIcon } from "@/components/icons";
+import { ThemeSwitch } from "@/components/theme-switch";
 
-import { Logo } from '@/components/icons';
-import SignUpPage from '@/app/usersignup/page';
-import LogoutButton from './LogoutButton';
+import { Button } from "@nextui-org/button";
+import { IconLogin2, IconLogout2 } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "@/redux/slice/authSlice";
+
+interface NavItem {
+  href: string;
+  label: string;
+  requiresLogin?: boolean;
+}
+
+interface SiteConfig {
+  navItems: NavItem[];
+  navMenuItems: NavItem[];
+  links: {
+    github: string;
+  };
+}
 
 export const Navbar = () => {
-  const searchInput = (
-    <Input
-      aria-label="Search"
-      classNames={{
-        inputWrapper: 'bg-default-100',
-        input: 'text-sm',
-      }}
-      endContent={
-        <Kbd className="hidden lg:inline-block" keys={['command']}>
-          K
-        </Kbd>
-      }
-      labelPlacement="outside"
-      placeholder="Search Charging..."
-      startContent={
-        <SearchIcon className="text-base text-default-400 pointer-events-none flex-shrink-0" />
-      }
-      type="search"
-    />
+  const isAuthenticated = useSelector(
+    (state: any) => state.auth.isAuthenticated
   );
 
+  const router = useRouter();
+  const dispatch = useDispatch();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    toast.success("Logged out successfully");
+    dispatch(logout());
+
+    router.push("/");
+  };
+
+  const renderMenuItems = (items: NavItem[]): JSX.Element[] => {
+    return items
+      .filter((item) => !item.requiresLogin || isAuthenticated)
+      .map((item) => (
+        <NavbarItem key={item.href}>
+          <NextLink
+            className={clsx(
+              linkStyles({ color: "foreground" }),
+              "data-[active=true]:text-primary data-[active=true]:font-medium"
+            )}
+            color="foreground"
+            href={item.href}
+          >
+            {item.label}
+          </NextLink>
+        </NavbarItem>
+      ));
+  };
   return (
     <NextUINavbar maxWidth="full" position="sticky">
       <NavbarBrand as="li" className="gap-3 max-w-fit">
@@ -56,20 +84,7 @@ export const Navbar = () => {
       </NavbarBrand>
       <NavbarContent className="basis-1/5 sm:basis-full" justify="end">
         <ul className="hidden lg:flex gap-4 justify-start ml-2">
-          {siteConfig.navItems.map((item) => (
-            <NavbarItem key={item.href}>
-              <NextLink
-                className={clsx(
-                  linkStyles({ color: 'foreground' }),
-                  'data-[active=true]:text-primary data-[active=true]:font-medium'
-                )}
-                color="foreground"
-                href={item.href}
-              >
-                {item.label}
-              </NextLink>
-            </NavbarItem>
-          ))}
+          {renderMenuItems(siteConfig.navItems)}
         </ul>
       </NavbarContent>
 
@@ -77,15 +92,30 @@ export const Navbar = () => {
         className="hidden sm:flex basis-1/5 sm:basis-full"
         justify="end"
       >
-        <NavbarItem className="hidden sm:flex gap-2">
-          <Link isExternal href={siteConfig.links.github} aria-label="Github">
-            <GithubIcon className="text-default-500" />
-          </Link>
-          <ThemeSwitch />
-        </NavbarItem>
-
         <NavbarItem className="hidden md:flex">
-          <LogoutButton />
+          {isAuthenticated ? (
+            <Button
+              color="primary"
+              variant="shadow"
+              startContent={<IconLogout2 />}
+              onClick={handleLogout}
+            >
+              Log Out
+            </Button>
+          ) : (
+            <Button
+              color="primary"
+              variant="shadow"
+              startContent={<IconLogin2 />}
+              href="/login"
+              as={Link}
+            >
+              Log In
+            </Button>
+          )}
+        </NavbarItem>
+        <NavbarItem className="hidden sm:flex gap-2">
+          <ThemeSwitch />
         </NavbarItem>
       </NavbarContent>
 
@@ -98,17 +128,16 @@ export const Navbar = () => {
       </NavbarContent>
 
       <NavbarMenu>
-        {searchInput}
         <div className="mx-4 mt-2 flex flex-col gap-2">
           {siteConfig.navMenuItems.map((item, index) => (
             <NavbarMenuItem key={`${item}-${index}`}>
               <Link
                 color={
                   index === 2
-                    ? 'primary'
+                    ? "primary"
                     : index === siteConfig.navMenuItems.length - 1
-                    ? 'danger'
-                    : 'foreground'
+                    ? "danger"
+                    : "foreground"
                 }
                 href="#"
                 size="lg"

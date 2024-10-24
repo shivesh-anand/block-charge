@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 interface Charger {
   type: string;
@@ -11,8 +11,7 @@ interface QueueItem {
 }
 
 export interface IStation extends Document {
-  firstName: string;
-  lastName: string;
+  stationName: string;
   email: string;
   password: string;
   location: string;
@@ -34,8 +33,7 @@ const queueItemSchema = new Schema<QueueItem>({
 
 const stationSchema = new Schema<IStation>(
   {
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
+    stationName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     location: { type: String, required: true },
@@ -49,6 +47,6 @@ const stationSchema = new Schema<IStation>(
   }
 );
 
-const Station = mongoose.model<IStation>('Station', stationSchema);
+const Station = mongoose.model<IStation>("Station", stationSchema);
 
 export default Station;

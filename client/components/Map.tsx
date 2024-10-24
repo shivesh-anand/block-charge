@@ -1,33 +1,32 @@
-'use client';
-import React, { useEffect, useState } from 'react';
+"use client";
 import {
-  APIProvider,
-  Map,
-  Marker,
-  InfoWindow,
-  useMapsLibrary,
-  useMap,
-} from '@vis.gl/react-google-maps';
+  PlaceDirectionsButton,
+  PlaceOverview,
+} from "@googlemaps/extended-component-library/react"; // Adjust import path as necessary
 import {
   Button,
-  Modal,
   Card,
   CardBody,
   CardHeader,
-  ModalContent,
-  useDisclosure,
+  Modal,
   ModalBody,
-  ModalHeader,
+  ModalContent,
   ModalFooter,
-} from '@nextui-org/react'; // Adjust import based on your UI library
+  ModalHeader,
+  useDisclosure,
+} from "@nextui-org/react"; // Adjust import based on your UI library
 import {
-  PlaceOverview,
-  PlaceDirectionsButton,
-  APILoader,
-} from '@googlemaps/extended-component-library/react'; // Adjust import path as necessary
+  APIProvider,
+  InfoWindow,
+  Map,
+  Marker,
+  useMap,
+  useMapsLibrary,
+} from "@vis.gl/react-google-maps";
+import { useEffect, useState } from "react";
 
-import { PlaceAutocompleteClassic } from './PlaceAutocompleteClassic'; // Adjust the import path as necessary
-import axios from 'axios';
+import axios from "axios";
+import { PlaceAutocompleteClassic } from "./PlaceAutocompleteClassic"; // Adjust the import path as necessary
 
 export default function Maps() {
   const center = { lat: 23.3507, lng: 85.31377 };
@@ -66,10 +65,10 @@ export default function Maps() {
 
   useEffect(() => {
     if (!origin) {
-      console.log('Trying to get user location...');
+      console.log("Trying to get user location...");
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          console.log('User location found:', position);
+          console.log("User location found:", position);
           const userLocation = {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
@@ -101,18 +100,18 @@ export default function Maps() {
   const fetchNearestChargingStation = async (origin) => {
     try {
       const response = await fetch(
-        'https://places.googleapis.com/v1/places:searchNearby',
+        "https://places.googleapis.com/v1/places:searchNearby",
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'X-Goog-Api-Key': process.env
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": process.env
               .NEXT_PUBLIC_GOOGLE_MAP_API_KEY as string,
-            'X-Goog-FieldMask':
-              'places.id,places.location,places.name,places.displayName,places.evChargeOptions,places.formattedAddress,places.rating',
+            "X-Goog-FieldMask":
+              "places.id,places.location,places.name,places.displayName,places.evChargeOptions,places.formattedAddress,places.rating",
           },
           body: JSON.stringify({
-            includedTypes: ['electric_vehicle_charging_station'],
+            includedTypes: ["electric_vehicle_charging_station"],
             maxResultCount: 10,
             locationRestriction: {
               circle: {
@@ -132,11 +131,11 @@ export default function Maps() {
       }
 
       const data = await response.json();
-      console.log('Charging Stations:', data); // Log the results to verify data
+      console.log("Charging Stations:", data); // Log the results to verify data
 
       return findNearestStation(origin, data.places);
     } catch (error) {
-      console.error('Error fetching charging stations:', error);
+      console.error("Error fetching charging stations:", error);
     }
   };
 
@@ -181,11 +180,11 @@ export default function Maps() {
         apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY as string}
       >
         <Map
-          style={{ width: '100vw', height: '100vh' }}
+          style={{ width: "100vw", height: "100vh" }}
           defaultCenter={origin || center}
           defaultZoom={10}
           // center={initialCenter || center}
-          gestureHandling={'greedy'}
+          gestureHandling={"greedy"}
           disableDefaultUI={true}
         />
         <div className="absolute top-20 left-4 z-10 p-4 flex flex-col space-y-4 w-80">
@@ -212,7 +211,7 @@ interface DirectionsProps {
 
 function Directions({ origin, destination }: DirectionsProps) {
   const map = useMap();
-  const routesLibrary = useMapsLibrary('routes');
+  const routesLibrary = useMapsLibrary("routes");
   const [directionsService, setDirectionsService] =
     useState<google.maps.DirectionsService>();
   const [directionsRenderer, setDirectionsRenderer] =
@@ -303,18 +302,18 @@ function NearbyChargingStations({
     const fetchChargingStations = async () => {
       try {
         const response = await fetch(
-          'https://places.googleapis.com/v1/places:searchNearby',
+          "https://places.googleapis.com/v1/places:searchNearby",
           {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
-              'X-Goog-Api-Key': process.env
+              "Content-Type": "application/json",
+              "X-Goog-Api-Key": process.env
                 .NEXT_PUBLIC_GOOGLE_MAP_API_KEY as string,
-              'X-Goog-FieldMask':
-                'places.id,places.location,places.name,places.displayName,places.evChargeOptions,places.formattedAddress,places.rating',
+              "X-Goog-FieldMask":
+                "places.id,places.location,places.name,places.displayName,places.evChargeOptions,places.formattedAddress,places.rating",
             },
             body: JSON.stringify({
-              includedTypes: ['electric_vehicle_charging_station'],
+              includedTypes: ["electric_vehicle_charging_station"],
               maxResultCount: 10,
               locationRestriction: {
                 circle: {
@@ -334,11 +333,11 @@ function NearbyChargingStations({
         }
 
         const data = await response.json();
-        console.log('Charging Stations:', data); // Log the results to verify data
+        console.log("Charging Stations:", data); // Log the results to verify data
 
         setChargingStations(data.places);
       } catch (error) {
-        console.error('Error fetching charging stations:', error);
+        console.error("Error fetching charging stations:", error);
       }
     };
 
@@ -382,19 +381,19 @@ function NearbyChargingStations({
 
   const formatConnectorType = (type: string): string => {
     switch (type) {
-      case 'EV_CONNECTOR_TYPE_CHADEMO':
-        return 'CHAdeMO';
-      case 'EV_CONNECTOR_TYPE_CCS_COMBO_2':
-        return 'CCS Combo 2';
-      case 'EV_CONNECTOR_TYPE_TYPE_2':
-        return 'Type 2';
+      case "EV_CONNECTOR_TYPE_CHADEMO":
+        return "CHAdeMO";
+      case "EV_CONNECTOR_TYPE_CCS_COMBO_2":
+        return "CCS Combo 2";
+      case "EV_CONNECTOR_TYPE_TYPE_2":
+        return "Type 2";
       default:
         return type;
     }
   };
   const fetchStationData = async (placeId: string) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       console.log(token);
       const response = await axios.get(
         `http://localhost:5000/api/stations/station/place/${placeId}`,
@@ -408,57 +407,57 @@ function NearbyChargingStations({
       setQueue(data.queue);
       return data;
     } catch (error) {
-      console.error('Error fetching station data:', error);
+      console.error("Error fetching station data:", error);
     }
   };
 
-  const fetchUserData = async (token: string) => {
-    try {
-      const response = await axios.post(
-        'http://localhost:5000/api/auth/validate-token',
-        { token }
-      );
-      console.log(response);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-    }
-  };
+  // const fetchUserData = async (token: string) => {
+  //   try {
+  //     const response = await axios.post(
+  //       'http://localhost:5000/api/auth/validate-token',
+  //       { token }
+  //     );
+  //     console.log(response);
+  //     return response.data;
+  //   } catch (error) {
+  //     console.error('Error fetching user data:', error);
+  //   }
+  // };
 
-  const handleCheckIn = async () => {
-    const token = localStorage.getItem('token');
-    console.log('token', token);
-    if (!token) {
-      console.error('No token found');
-      return;
-    }
+  // const handleCheckIn = async () => {
+  //   const token = localStorage.getItem("token");
+  //   console.log("token", token);
+  //   if (!token) {
+  //     console.error("No token found");
+  //     return;
+  //   }
 
-    const userData = await fetchUserData(token);
-    if (!userData) {
-      console.error('Invalid token');
-      return;
-    }
-    console.log('userdata', userData);
-    const user = userData.user;
-    const checkInData = {
-      placeId: selectedStation.id,
-      email: userData.user.email,
-      vehicleType: userData.user.vehicleType,
-    };
+  // const userData = await fetchUserData(token);
+  // if (!userData) {
+  //   console.error('Invalid token');
+  //   return;
+  // }
+  // console.log('userdata', userData);
+  // const user = userData.user;
+  // const checkInData = {
+  //   placeId: selectedStation.id,
+  //   email: userData.user.email,
+  //   vehicleType: userData.user.vehicleType,
+  // };
 
-    console.log('checkedInData', checkInData);
+  // console.log('checkedInData', checkInData);
 
-    try {
-      await axios.post('http://localhost:5000/api/stations/add', checkInData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      alert('Check-in successful');
-    } catch (error) {
-      console.error('Error checking in:', error);
-    }
-  };
+  //   try {
+  //     await axios.post('http://localhost:5000/api/stations/add', checkInData, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
+  //     alert('Check-in successful');
+  //   } catch (error) {
+  //     console.error('Error checking in:', error);
+  //   }
+  //};
 
   return (
     <>
@@ -496,7 +495,7 @@ function NearbyChargingStations({
             {selectedStation.evChargeOptions && (
               <div>
                 <p className="font-semibold text-pretty text-medium">
-                  Connector Count:{' '}
+                  Connector Count:{" "}
                   {selectedStation.evChargeOptions.connectorCount}
                 </p>
                 {selectedStation.evChargeOptions.connectorAggregation && (
@@ -504,7 +503,7 @@ function NearbyChargingStations({
                     {selectedStation.evChargeOptions.connectorAggregation.map(
                       (connector: any, index: number) => (
                         <li key={index}>
-                          {formatConnectorType(connector.type)}:{' '}
+                          {formatConnectorType(connector.type)}:{" "}
                           {connector.maxChargeRateKw / 1000} kW (
                           {connector.count} available)
                         </li>

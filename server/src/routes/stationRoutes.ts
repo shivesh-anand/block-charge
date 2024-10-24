@@ -1,4 +1,4 @@
-import express from 'express';
+import express from "express";
 import {
   addUserToQueue,
   deleteQueueItems,
@@ -7,17 +7,18 @@ import {
   getStationByPlaceId,
   updateStation,
   verifyCheckIn,
-} from '../controllers/stationController.js';
-import { protect } from '../middlewares/authMiddleware.js';
+} from "../controllers/stationController.js";
+import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.post('/verify-checkin', protect, verifyCheckIn);
-router.get('/me', protect, getCurrentStation);
-router.put('/update', protect, updateStation);
-router.get('/station/place/:placeId', protect, getStationByPlaceId);
-router.post('/add', protect, addUserToQueue);
-router.get('/:placeId', protect, getQueueItems);
-router.delete('/:placeId', protect, deleteQueueItems);
+router.use(protect);
+router.post("/verify-checkin", verifyCheckIn);
+router.get("/me", getCurrentStation);
+router.put("/update", updateStation);
+router.get("/station/place/:placeId", getStationByPlaceId);
+router.post("/add", addUserToQueue);
+router.get("/:placeId", getQueueItems);
+router.delete("/:placeId", deleteQueueItems);
 
 export default router;

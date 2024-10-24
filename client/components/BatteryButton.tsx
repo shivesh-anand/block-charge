@@ -1,13 +1,12 @@
-import React from 'react';
+import React from "react";
+import { BatteryIcon } from "./icons";
+import IOTCard from "./IOTCard";
 import {
   Button,
   Popover,
-  PopoverTrigger,
   PopoverContent,
-} from '@nextui-org/react';
-import { BatteryIcon } from './icons';
-import IOTCard from './IOTCard';
-import { toast } from 'react-toastify';
+  PopoverTrigger,
+} from "@nextui-org/react";
 
 interface BatteryButtonProps {
   level: number; // Battery level from 0 to 100
@@ -19,10 +18,10 @@ const BatteryButton: React.FC<BatteryButtonProps> = ({
   onChangeLevel,
 }) => {
   const getGradientClass = (level: number) => {
-    if (level > 75) return 'from-green-400 to-green-600';
-    if (level > 50) return 'from-yellow-400 to-yellow-600';
-    if (level > 25) return 'from-orange-400 to-orange-600';
-    return 'from-red-400 to-red-600';
+    if (level > 75) return "from-green-400 to-green-600";
+    if (level > 50) return "from-yellow-400 to-yellow-600";
+    if (level > 25) return "from-orange-400 to-orange-600";
+    return "from-red-400 to-red-600";
   };
 
   const gradientClass = getGradientClass(level);
