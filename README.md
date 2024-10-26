@@ -27,6 +27,7 @@ A decentralized EV charging application designed to connect electric vehicle use
    ```
 
 2. **Install Dependencies**:
+   
    Server:
    ```
    cd server
@@ -47,12 +48,12 @@ A decentralized EV charging application designed to connect electric vehicle use
    ```
 
 5. **Run the Application**:
-   - **Backend**: 
+   - **Server**: 
      ```
      cd server
      npm run dev
      ```
-   - **Frontend**:
+   - **Client**:
      ```
      cd client
      npm run dev
