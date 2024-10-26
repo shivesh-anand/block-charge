@@ -27,11 +27,18 @@ A decentralized EV charging application designed to connect electric vehicle use
    ```
 
 2. **Install Dependencies**:
-   ```bash
+   Server:
+   ```
+   cd server
+   npm install
+   ```
+   Client:
+   ```
+   cd client
    npm install
    ```
 
-3. **Configure Environment Variables**:
+4. **Configure Environment Variables**:
    Create a `.env` file in the project root and add the following variables:
    ```plaintext
    NEXT_PUBLIC_BACKEND_URL=<backend_url>
@@ -39,14 +46,16 @@ A decentralized EV charging application designed to connect electric vehicle use
    GOOGLE_MAPS_API_KEY=<your_google_maps_api_key>
    ```
 
-4. **Run the Application**:
+5. **Run the Application**:
    - **Backend**: 
-     ```bash
-     npm run server
+     ```
+     cd server
+     npm run dev
      ```
    - **Frontend**:
-     ```bash
-     npm run client
+     ```
+     cd client
+     npm run dev
      ```
 
 ## Blockchain Overview
