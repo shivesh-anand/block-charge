@@ -64,7 +64,7 @@ export default function NearbyChargingStations({
         }
 
         const data = await response.json();
-        console.log("Charging Stations:", data); // Log the results to verify data
+        console.log("Charging Stations:", data);
 
         setChargingStations(data.places);
       } catch (error) {
@@ -77,20 +77,17 @@ export default function NearbyChargingStations({
     }
   }, [map, center]);
 
-  // Function to handle marker click
   const handleMarkerClick = async (station: any) => {
-    console.log(station);
+    console.log("station from handlemarker click", station);
     setSelectedStation(station);
     const stationData = await fetchStationData(station.id);
     setStationData(stationData);
   };
 
-  // Function to close info window
   const closeInfoWindow = () => {
     setSelectedStation(null);
   };
 
-  // Function to fit map bounds to markers
   const fitMapToBounds = () => {
     if (!map || !chargingStations || chargingStations.length === 0) return;
 
@@ -107,7 +104,7 @@ export default function NearbyChargingStations({
   };
 
   useEffect(() => {
-    fitMapToBounds(); // Fit map bounds whenever chargingStations or map changes
+    fitMapToBounds();
   }, [chargingStations, map]);
 
   const formatConnectorType = (type: string): string => {
@@ -125,7 +122,7 @@ export default function NearbyChargingStations({
   const fetchStationData = async (placeId: string) => {
     try {
       const token = localStorage.getItem("token");
-      console.log(token);
+      console.log(placeId);
       const response = await axios.get(
         `http://localhost:5000/api/stations/station/place/${placeId}`,
         {
@@ -134,6 +131,8 @@ export default function NearbyChargingStations({
           },
         }
       );
+
+      console.log("response", response);
       const data = await response.data;
       setQueue(data.queue);
       return data;
@@ -142,58 +141,58 @@ export default function NearbyChargingStations({
     }
   };
 
-  function handleCheckIn(e: any): void {
-    // Implement the check-in logic here
-    console.log("Check-in button pressed");
-  }
-
-  // const fetchUserData = async (token: string) => {
-  //   try {
-  //     const response = await axios.post(
-  //       'http://localhost:5000/api/auth/validate-token',
-  //       { token }
-  //     );
-  //     console.log(response);
-  //     return response.data;
-  //   } catch (error) {
-  //     console.error('Error fetching user data:', error);
-  //   }
-  // };
-
-  // const handleCheckIn = async () => {
-  //   const token = localStorage.getItem("token");
-  //   console.log("token", token);
-  //   if (!token) {
-  //     console.error("No token found");
-  //     return;
-  //   }
-
-  // const userData = await fetchUserData(token);
-  // if (!userData) {
-  //   console.error('Invalid token');
-  //   return;
+  // function handleCheckIn(e: any): void {
+  //   // Implement the check-in logic here
+  //   console.log("Check-in button pressed");
   // }
-  // console.log('userdata', userData);
-  // const user = userData.user;
-  // const checkInData = {
-  //   placeId: selectedStation.id,
-  //   email: userData.user.email,
-  //   vehicleType: userData.user.vehicleType,
-  // };
 
-  // console.log('checkedInData', checkInData);
+  const fetchUserData = async (token: string) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/validate-token",
+        { token }
+      );
+      console.log(response);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
 
-  //   try {
-  //     await axios.post('http://localhost:5000/api/stations/add', checkInData, {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-  //     alert('Check-in successful');
-  //   } catch (error) {
-  //     console.error('Error checking in:', error);
-  //   }
-  //};
+  const handleCheckIn = async () => {
+    const token = localStorage.getItem("token");
+    console.log("token", token);
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+
+    const userData = await fetchUserData(token);
+    if (!userData) {
+      console.error("Invalid token");
+      return;
+    }
+    console.log("userdata", userData);
+    const user = userData.user;
+    const checkInData = {
+      placeId: selectedStation.id,
+      email: userData.user.email,
+      vehicleType: userData.user.vehicleType,
+    };
+
+    console.log("checkedInData", checkInData);
+
+    try {
+      await axios.post("http://localhost:5000/api/stations/add", checkInData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      alert("Check-in successful");
+    } catch (error) {
+      console.error("Error checking in:", error);
+    }
+  };
 
   return (
     <>

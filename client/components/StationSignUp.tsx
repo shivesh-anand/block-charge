@@ -17,7 +17,10 @@ const StationSignUpForm = () => {
   const [password, setPassword] = useState("");
   const [stationName, setStationName] = useState("");
   const [location, setLocation] = useState("");
-  const [chargerTypes, setChargerTypes] = useState<string[]>([]);
+  const [selectedChargerTypes, setSelectedChargerTypes] = useState<string[]>(
+    []
+  );
+  const [prices, setPrices] = useState<{ [key: string]: string }>({});
   const [placeId, setPlaceId] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -34,11 +37,13 @@ const StationSignUpForm = () => {
 
   const handlePlaceSelect = (place: google.maps.places.PlaceResult | null) => {
     if (place) {
-      console.log(place.place_id);
       setLocation(place.formatted_address!);
       setPlaceId(place.place_id!);
-      console.log("Selected Place ID:", place.place_id);
     }
+  };
+
+  const handlePriceChange = (key: string, value: string) => {
+    setPrices((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,6 +51,11 @@ const StationSignUpForm = () => {
     setLoading(true);
 
     try {
+      const formattedChargers = selectedChargerTypes.map((key) => ({
+        type: key,
+        price: prices[key] || "",
+      }));
+
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_SERVER_URL}/api/auth/register/station`,
         {
@@ -53,7 +63,7 @@ const StationSignUpForm = () => {
           email,
           password,
           location,
-          chargerTypes,
+          chargers: formattedChargers,
           placeId,
         }
       );
@@ -79,76 +89,69 @@ const StationSignUpForm = () => {
     <form className="flex flex-col gap-4 w-full" onSubmit={handleSubmit}>
       <Input
         label="Station Name"
-        name="stationName"
-        placeholder="John"
-        variant="bordered"
-        isRequired
         value={stationName}
         onChange={(e) => setStationName(e.target.value)}
         isDisabled={loading}
+        isRequired
       />
       <Input
         label="Email"
-        name="email"
-        placeholder="Enter your email"
-        variant="bordered"
-        isRequired
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         isDisabled={loading}
+        isRequired
       />
       <Input
         label="Password"
-        name="password"
-        placeholder="Enter your password"
         type="password"
-        variant="bordered"
-        isRequired
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         isDisabled={loading}
+        isRequired
       />
-      <APIProvider
-        apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY as string}
-      >
+      <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY!}>
         <PlaceAutocompleteClassic
-          placeholder="Enter a valid location"
           onPlaceSelect={handlePlaceSelect}
+          placeholder={"Enter exact charging station location"}
         />
       </APIProvider>
       <Select
         label="Charger Types"
         selectionMode="multiple"
-        placeholder="Select all chargers available and specify price/minutes"
-        className="mb-4"
-        isRequired
-        onSelect={(e) =>
-          setChargerTypes(
-            Array.from(
-              (e.target as HTMLSelectElement).selectedOptions,
-              (option) => option.value
-            )
-          )
+        placeholder="Select chargers"
+        selectedKeys={new Set(selectedChargerTypes)} // Ensure controlled component
+        onSelectionChange={(keys) =>
+          setSelectedChargerTypes(Array.from(keys as Set<string>))
         }
-        value={chargerTypes}
       >
-        {chargers.map((charger) => (
-          <SelectItem key={charger.key} value={charger.key}>
-            {charger.label}
+        {chargers.map((option) => (
+          <SelectItem key={option.key} value={option.key}>
+            {option.label}
           </SelectItem>
         ))}
       </Select>
-      {/* <p className="text-small text-default-500 mb-4">
-        Selected: {Array.from(values).join(", ")}
-      </p> */}
-      <Button
-        className="font-bold text-lg "
-        size="lg"
-        type="submit"
-        variant="shadow"
-        color="primary"
-        isLoading={loading}
-      >
+      {/* Dynamic inputs for charger prices */}
+      {Array.from(selectedChargerTypes).map((key) => {
+        const charger = chargers.find((charger) => charger.key === key);
+        if (!charger) return null;
+
+        return (
+          <div key={key} className="flex flex-col gap-2 mb-4">
+            <label htmlFor={`price-${key}`} className="font-medium">
+              {charger.label} Price (₹/min)
+            </label>
+            <Input
+              id={`price-${key}`}
+              type="text"
+              placeholder="Enter Price in ₹/min"
+              value={prices[key] || ""}
+              onChange={(e) => handlePriceChange(key, e.target.value)}
+              isRequired
+            />
+          </div>
+        );
+      })}
+      <Button type="submit" isLoading={loading}>
         Sign Up
       </Button>
     </form>

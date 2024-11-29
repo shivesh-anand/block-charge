@@ -6,10 +6,21 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import stationRoutes from "./routes/stationRoutes.js";
 import blockchainRoutes from "./routes/blockchainRoutes.js";
+import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
+import morgan from "morgan";
+import { protect } from "./middlewares/authMiddleware.js";
 
 dotenv.config();
 
 const app = express();
+
+// Security middleware
+app.use(helmet());
+app.use(mongoSanitize());
+
+// Logger middleware
+app.use(morgan("combined"));
 
 // CORS configuration
 const corsOptions = {
@@ -23,6 +34,7 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use("/api/auth", authRoutes);
+app.use(protect);
 app.use("/api/users", userRoutes);
 app.use("/api/stations", stationRoutes);
 app.use("/api/blockchain", blockchainRoutes);

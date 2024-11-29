@@ -36,7 +36,7 @@ const UserSignUpForm = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}http://localhost:5000/api/auth/register/user`,
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/auth/register/user`,
         {
           firstName,
           lastName,
@@ -60,6 +60,7 @@ const UserSignUpForm = () => {
       toast.error(
         error?.response?.data?.message || "An error occurred. Please try again."
       );
+      console.log(error);
     } finally {
       setDisableButton(false);
       setLoading(false);

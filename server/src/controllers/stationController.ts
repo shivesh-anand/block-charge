@@ -10,7 +10,6 @@ export const verifyCheckIn = async (req: Request, res: Response) => {
     const user = await User.findById(userId);
 
     if (station && user) {
-      // Implement your check-in logic here
       res.json({ message: "Check-in verified successfully" });
     } else {
       res.status(404).json({ message: "Station or user not found" });
@@ -37,15 +36,12 @@ export const updateStation = async (req: Request, res: Response) => {
   const updateFields = req.body;
 
   try {
-    // Check if station exists
     const station = await Station.findById(req.user._id);
     if (!station) {
       return res.status(404).json({ message: "Station not found" });
     }
 
-    // Update station details with provided fields
     Object.keys(updateFields).forEach((key) => {
-      // Only update fields that are present in the request body
       if (updateFields[key] !== undefined) {
         (station as any)[key] = updateFields[key];
       }
@@ -64,6 +60,7 @@ export const updateStation = async (req: Request, res: Response) => {
 
 export const getStationByPlaceId = async (req: Request, res: Response) => {
   const { placeId } = req.params;
+  console.log("placeId", placeId);
 
   try {
     const station = await Station.findOne({ placeId });
@@ -110,7 +107,6 @@ export const addUserToQueue = async (req: Request, res: Response) => {
   }
 };
 
-// Get all queue items for a particular station
 export const getQueueItems = async (req: Request, res: Response) => {
   const { placeId } = req.params;
 
@@ -128,10 +124,9 @@ export const getQueueItems = async (req: Request, res: Response) => {
   }
 };
 
-// Delete one or more queue items
 export const deleteQueueItems = async (req: Request, res: Response) => {
   const { placeId } = req.params;
-  const { email } = req.body; // Array of emails to delete
+  const { email } = req.body;
 
   try {
     const station = await Station.findOne({ placeId });
