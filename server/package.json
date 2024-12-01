@@ -13,6 +13,7 @@
   "author": "Shivesh Anand",
   "license": "ISC",
   "dependencies": {
+    "@types/ws": "^8.5.13",
     "axios": "^1.7.2",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
@@ -23,7 +24,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongo-sanitize": "^1.1.0",
     "mongoose": "^8.4.4",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
