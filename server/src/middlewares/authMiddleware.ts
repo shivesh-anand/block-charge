@@ -14,6 +14,7 @@ export const protect = async (
   next: NextFunction
 ) => {
   let token: string | undefined;
+  console.log('Reached');
 
   if (
     req.headers.authorization &&

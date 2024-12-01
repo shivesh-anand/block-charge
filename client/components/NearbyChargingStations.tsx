@@ -13,7 +13,7 @@ import {
   useDisclosure,
 } from "@nextui-org/react";
 import { InfoWindow, Marker, useMap } from "@vis.gl/react-google-maps";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import axios from "axios";
 
@@ -28,6 +28,7 @@ export default function NearbyChargingStations({
   const map = useMap();
   const [queue, setQueue] = useState<number>(0);
   const [stationData, setStationData] = useState<any>(null);
+  const Socket: any = useRef();
 
   useEffect(() => {
     const fetchChargingStations = async () => {
@@ -119,6 +120,33 @@ export default function NearbyChargingStations({
         return type;
     }
   };
+
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:5001');
+    Socket.current = ws;
+
+    ws.onopen = () => {
+      const token = localStorage.getItem("token");
+      console.log('initialize: ', token);
+      ws.send(JSON.stringify({ from: token, to: '668634e5158bf29d41fc6bbf', text: 'Initialize', type: 'User' }));
+    };
+
+    ws.onmessage = (message) => {
+      alert(message.data);
+      try {
+        const data = JSON.parse(message.data); 
+        console.log('DATA', data);
+      } catch (error) {
+        console.error('Error parsing message data:', error);
+      }
+    }
+
+    return () => {
+      ws.close();
+      Socket.current = null;
+    }
+  }, []);
+
   const fetchStationData = async (placeId: string) => {
     try {
       const token = localStorage.getItem("token");
@@ -131,10 +159,10 @@ export default function NearbyChargingStations({
           },
         }
       );
-
       console.log("response", response);
       const data = await response.data;
       setQueue(data.queue);
+      
       return data;
     } catch (error) {
       console.error("Error fetching station data:", error);
@@ -159,14 +187,24 @@ export default function NearbyChargingStations({
     }
   };
 
+  const sendMessage = () => {
+    const token = localStorage.getItem("token");
+    console.log('verify: ', token);
+    if (Socket.current && Socket.current.readyState === WebSocket.OPEN) {
+      Socket.current.send(JSON.stringify({ from: token, to: '668634e5158bf29d41fc6bbf', text: 'verify', type: 'User' }));
+    } else {
+      console.warn('WebSocket is not ready');
+    }
+  }
+
   const handleCheckIn = async () => {
+    sendMessage();
     const token = localStorage.getItem("token");
     console.log("token", token);
     if (!token) {
       console.error("No token found");
       return;
     }
-
     const userData = await fetchUserData(token);
     if (!userData) {
       console.error("Invalid token");
@@ -252,7 +290,7 @@ export default function NearbyChargingStations({
                 <p className="font-semibold text-medium text-wrap">
                   Queue: {queue}
                 </p>
-                <Button onPress={handleCheckIn}>Check In</Button>
+                <Button onClick={handleCheckIn}>Check In</Button>
               </div>
             )}
             <Button onPress={onOpen} className="mt-2">

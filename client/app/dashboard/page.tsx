@@ -2,12 +2,30 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/utils/cn";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  useDisclosure,
+  Card, 
+  CardBody
+} from "@nextui-org/react";
+import axios from "axios";
 
 interface QueueItem {
   _id: string;
   email: string;
   vehicleType: string;
+}
+
+interface queueElement {
+  _id: string,
+  UserId: string,
+  StationId: string
 }
 
 export default function UpdateStationForm() {
@@ -18,6 +36,10 @@ export default function UpdateStationForm() {
     password: "",
     queue: "",
   });
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [items, setItems] = useState<queueElement[]>([]);
+  const [loading, setLoading] = useState(false);
+  const Socket: any = useRef();
 
   // const [stationData, setStationData] = useState<any>(null); // Adjust type as per your API response structure
   // // [token, setToken] = useState<string | null>();
@@ -125,6 +147,68 @@ export default function UpdateStationForm() {
 
   //if (!stationData) return <p>Loading...</p>;
 
+  const SendMessage = (e: string) => {
+    console.log('TO:', e);
+    if (Socket.current && Socket.current.readyState === WebSocket.OPEN) {
+      Socket.current.send(JSON.stringify({from: '668634e5158bf29d41fc6bbf', to : e, text: 'verify', type: 'Station', success: 'true'}));
+    } else {
+      console.warn('WebSocket is not ready');
+    }
+  }
+
+  const verificationHandler = async (e: string) => {
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/queue/verify`,
+        {
+          stationId: '668634e5158bf29d41fc6bbf',
+          userId: e
+        }
+      );
+
+      if(response) {
+        console.log('RESPONSE', response);
+        const newArray = [];
+        for(let i = 0; i < items.length; i++) {
+            if(items[i].UserId === e) {
+              continue;
+            } 
+            newArray.push(items[i]);
+        }
+        setItems(newArray);
+        setLoading(false);
+        SendMessage(e);
+      }
+    } catch(err) {
+      console.log(e);
+    }
+  }
+
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:5001');
+    Socket.current = ws;
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ from: '668634e5158bf29d41fc6bbf', to: '', text: 'Initialize', type: 'Station', success: 'true' }));
+    };
+
+    ws.onmessage = (message) => {
+      try {
+        const data = JSON.parse(message.data); 
+        setItems(data);
+        console.log('DATA', data);
+      } catch (error) {
+        console.error('Error parsing message data:', error);
+      }
+    }
+
+    return () => {
+      ws.close();
+      Socket.current = null;
+    }
+  }, []);
+
   return (
     <div className="max-w-md w-full mx-auto rounded-none md:rounded-2xl p-4 md:p-8 shadow-input bg-white dark:bg-black">
       <h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200">
@@ -193,9 +277,59 @@ export default function UpdateStationForm() {
       </form>
 
       {/* Button to fetch queue items */}
-      <button className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]">
+      <button
+        onClick={onOpen}
+        className={`bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset] ${
+          items.length > 0 ? "text-green-500" : "text-white"
+        }`}
+      >
         Fetch Queue Items
       </button>
+
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Recent Check-Ins
+              </ModalHeader>
+
+              {/* Modal Body */}
+               <ModalBody>
+                  {Array.isArray(items) ? (
+                    items.map((i: any) => (
+                      <Card key={i.UserRef}>
+                        <CardBody
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between", 
+                            alignItems: "center", 
+                          }}
+                        >
+                          <div>{i.UserRef}</div>
+                          {loading ? <p>Loading...</p> : <Button onClick={() => verificationHandler(i.UserRef)} color="success" variant="light">Verify</Button>}
+                        </CardBody>
+                      </Card>
+                    ))
+                  ) : (
+                    <div>No items to display</div>
+                  )}
+                </ModalBody>
+
+
+              {/* Modal Footer */}
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  Close
+                </Button>
+                <Button color="primary" onPress={onClose}>
+                  Confirm
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
 
       {/* Display queue items */}
       <div className="mt-4">
