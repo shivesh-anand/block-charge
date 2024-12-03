@@ -72,7 +72,7 @@ const StationSignUpForm = () => {
         toast.success(response.data.message);
         localStorage.setItem("token", response.data.token);
         dispatch(login(response.data.token));
-        router.push("/map");
+        router.push("/dashboard");
       } else {
         toast.error(response.data.message);
       }

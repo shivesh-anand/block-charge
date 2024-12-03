@@ -7,6 +7,11 @@ const blockChargeBlockchain = new Blockchain();
 export const addTransaction = async (req: Request, res: Response) => {
   try {
     const { from, to, data } = req.body;
+
+    if (!from || !to || !data) {
+      return res.status(400).json({ message: "Invalid transaction data" });
+    }
+
     const transaction: Transaction = {
       from,
       to,
