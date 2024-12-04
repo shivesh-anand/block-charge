@@ -27,9 +27,9 @@ function MapsPage() {
         <SearchBar />
       </div> */}
 
-      <div className="absolute bottom-10 right-40 flex justify-center items-center z-10">
+      {/* <div className="absolute bottom-10 right-40 flex justify-center items-center z-10">
         <BatteryButton level={batteryLevel} onChangeLevel={setBatteryLevel} />
-      </div>
+      </div> */}
     </section>
   );
 }

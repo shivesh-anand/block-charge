@@ -3,11 +3,85 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import Station from "../models/stationModel.js";
 import User from "../models/userModel.js";
+import { addTransaction } from "./blockchainController.js";
 
 interface JwtPayload {
   id: string;
   role: string;
 }
+
+export const register = async (req: Request, res: Response) => {
+  const {
+    firstName,
+    lastName,
+    email,
+    password,
+    type, // "user" or "station"
+    vehicleType,
+    vehicleNumber,
+    location, // For stations
+    chargers, // For stations
+    placeId, // For stations
+  } = req.body;
+
+  try {
+    // Validate required fields
+    if (!firstName || !lastName || !email || !password || !type) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Check for existing user
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(409).json({ message: "Account already exists" });
+    }
+
+    // Hash the password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Construct user data
+    const userData = {
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      type,
+      stake: 0, // Default stake
+      ...(type === "user" && { vehicleType, vehicleNumber }),
+      ...(type === "station" && { location, chargers, placeId }),
+    };
+
+    // Create user or station
+    const user = await User.create(userData);
+
+    // Generate JWT
+    const token = jwt.sign(
+      { id: user._id, email, role: type },
+      process.env.JWT_SECRET!,
+      { expiresIn: "1h" }
+    );
+
+    // Prepare transaction data
+    const transactionData = {
+      from: "System", // Could be changed to a real sender if necessary
+      to: user._id.toString(),
+      data: JSON.stringify(userData),
+      type: "SIGN_UP" as "SIGN_UP",
+    };
+
+    // Add the transaction using the blockchain controller function
+    await addTransaction(transactionData); // Call addTransactionData directly
+
+    return res.status(201).json({
+      message: `${type === "user" ? "User" : "Station"} created successfully`,
+      token,
+    });
+  } catch (error) {
+    console.error("Registration Error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
 
 export const registerUser = async (req: Request, res: Response) => {
   const { firstName, lastName, email, password, vehicleType, vehicleNumber } =
