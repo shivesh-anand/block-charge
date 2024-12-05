@@ -14,6 +14,7 @@ import {
 } from "@nextui-org/react";
 import { InfoWindow, Marker, useMap } from "@vis.gl/react-google-maps";
 import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 
 import axios from "axios";
 
@@ -126,16 +127,17 @@ export default function NearbyChargingStations({
     Socket.current = ws;
 
     ws.onopen = () => {
-      const token = localStorage.getItem("token");
-      console.log('initialize: ', token);
-      ws.send(JSON.stringify({ from: token, to: '668634e5158bf29d41fc6bbf', text: 'Initialize', type: 'User' }));
+      ws.send(JSON.stringify({ from: '674b99bc35b111c33ef33dce', to: '668634e5158bf29d41fc6bbf', text: 'Initialize', type: 'User' }));
     };
 
     ws.onmessage = (message) => {
-      alert(message.data);
       try {
         const data = JSON.parse(message.data); 
-        console.log('DATA', data);
+        if(data.success === true) {
+          alert(`Verified at station: ${data.from} successfully`);
+        } else {
+          alert(`Verification at station: ${data.from} was unsuccessfully`);
+        }
       } catch (error) {
         console.error('Error parsing message data:', error);
       }
@@ -187,18 +189,56 @@ export default function NearbyChargingStations({
     }
   };
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     const token = localStorage.getItem("token");
-    console.log('verify: ', token);
-    if (Socket.current && Socket.current.readyState === WebSocket.OPEN) {
-      Socket.current.send(JSON.stringify({ from: token, to: '668634e5158bf29d41fc6bbf', text: 'verify', type: 'User' }));
-    } else {
-      console.warn('WebSocket is not ready');
-    }
-  }
+    const stationId = "668634e5158bf29d41fc6bbf"; 
 
+    console.log(token);
+  
+    if (!token) {
+      toast.error("User is not authenticated");
+      return;
+    }
+  
+    try {
+      const response = await fetch("http://localhost:5000/api/queue/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, 
+        },
+        body: JSON.stringify({ userId: '674b99bc35b111c33ef33dce', stationId: stationId }), 
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
+        if (Socket.current && Socket.current.readyState === WebSocket.OPEN) {
+          Socket.current.send(
+            JSON.stringify({
+              from: '674b99bc35b111c33ef33dce',
+              to: stationId,
+              text: "verify",
+              type: "User",
+            })
+          );
+          toast.success("Item added and verification message sent");
+        } else {
+          console.warn("WebSocket is not ready");
+          toast.error("WebSocket connection is not established");
+        }
+      } else if (response.status === 400) {
+        toast.error("You are already in the queue. Please wait for your turn.");
+      } else {
+        toast.error(result.message || "Failed to add the item");
+      }
+    } catch (error: any) {
+      console.error("Error during item addition:", error);
+      toast.error("An error occurred while adding the item");
+    }
+  };
+  
   const handleCheckIn = async () => {
-    sendMessage();
     const token = localStorage.getItem("token");
     console.log("token", token);
     if (!token) {
@@ -230,6 +270,7 @@ export default function NearbyChargingStations({
     } catch (error) {
       console.error("Error checking in:", error);
     }
+    sendMessage();
   };
 
   return (
@@ -335,6 +376,7 @@ export default function NearbyChargingStations({
           )}
         </ModalContent>
       </Modal>
+      <Button onPress={sendMessage}>Check-In</Button>
     </>
   );
 }

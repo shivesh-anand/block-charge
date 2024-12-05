@@ -23,7 +23,7 @@ export const protect = async (
     try {
       token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-
+      console.log(decoded);
       if (decoded.role === "user") {
         req.user = await User.findById(decoded.id).select("-password");
       } else if (decoded.role === "station") {

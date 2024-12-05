@@ -1,8 +1,5 @@
 import { WebSocketServer, WebSocket } from 'ws';
-import StationQueue from '../models/StationQueueModel.js';
-import UserQueue from '../models/UserQueueModel.js';
 import jwt from "jsonwebtoken";
-import { token } from 'morgan';
 
 interface JwtPayload {
     userId?: string,
@@ -10,17 +7,7 @@ interface JwtPayload {
     role?: string,
     iat?: string,
     exp?: string
-  }
-  
-  const getId = (from: string) => {
-        const newObject = jwt.verify(from, process.env.JWT_SECRET!) as JwtPayload;
-        return newObject.userId;
-        if (error instanceof jwt.TokenExpiredError) {
-            console.error('Token has expired:', error.expiredAt);
-            return null; 
-        }
-        throw er
-    };
+}
 
 export const setupWebSocketServer = () => {
     const wss = new WebSocketServer({ port: 5001 });
@@ -39,66 +26,27 @@ export const setupWebSocketServer = () => {
 
             if(text === 'Initialize') {
                 console.log(`A client connected ${from}`);
-                
-                if(type === 'Station') {
-                    clients.set(from, ws);
-                    const queueItems = await StationQueue.find({
-                        StationRef: from
-                    }) || [];
-                    ws.send(JSON.stringify(queueItems));
-                }
-                                
-                if(type === 'User') {
-                    const UserId: any = getId(from);
-                    clients.set(UserId, ws);
-                    const queueItems = await UserQueue.find({
-                        UserRef: UserId
-                    }) || [];
-                    ws.send(JSON.stringify(queueItems));
-                }
+                clients.set(from, ws);
+                console.log(clients.size);
             } else {
                 if(type === 'User') {
-                    const UserId: any = getId(from);
-                    const user = await StationQueue.findOne({
-                        UserRef: UserId,
-                        StationRef: to
-                    });
-                    if(!user) {
-                        await StationQueue.create({
-                            UserRef: UserId,
-                            StationRef: to
-                        });
-                        const queueItems = await StationQueue.find({
-                            StationRef: to
-                        }) || [];
-                        const toSocket = clients.get(to);
-                        if(toSocket) {
-                            toSocket.send(JSON.stringify(queueItems));
-                        }
+                    const toSocket = clients.get(to);
+                    if(toSocket) {
+                        toSocket.send(JSON.stringify({
+                            from: from
+                        }));
                     }
                 }
-                    if(type === 'Station') {
-                        const user = await UserQueue.findOne({
-                            UserRef: to,
-                            StationRef: from
-                        });
-                        console.log('user:', user);
-                        if(!user) {
-                            await UserQueue.create({
-                                UserRef: to,
-                                StationRef: from,
-                                success: success
-                            });
-                            const queueItems = await UserQueue.find({
-                                UserRef: to
-                            }) || [];
-                            const toSocket = clients.get(to);
-                            if(toSocket) {
-                                console.log(queueItems);
-                                toSocket.send(JSON.stringify(queueItems));
-                            }
-                        }
-                    }  
+                if(type === 'Station') {
+                    console.log(to);
+                    const toSocket = clients.get(to);
+                    if(toSocket) {
+                        toSocket.send(JSON.stringify({
+                            from: toSocket,
+                            success: success
+                        }));
+                    }
+                } 
             }
         });
 
