@@ -4,8 +4,11 @@ import User from "../models/userModel.js";
 import Station from "../models/stationModel.js";
 
 interface JwtPayload {
-  id: string;
-  role: string;
+  userId?: string,
+  email?: string,
+  role?: string,
+  iat?: string,
+  exp?: string
 }
 
 export const protect = async (
@@ -24,11 +27,11 @@ export const protect = async (
       token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
       if (decoded.role === "user") {
-        req.user = await User.findById(decoded.id).select("-password");
+        req.user = await User.findById(decoded.userId).select("-password");
       } else if (decoded.role === "station") {
-        req.user = await Station.findById(decoded.id).select("-password");
+        req.user = await Station.findById(decoded.userId).select("-password");
       }
-      
+
       next();
     } catch (error) {
       res.status(401).json({ message: "Not authorized, token failed" });

@@ -103,7 +103,9 @@ export const fetchUsers = async (req: Request, res: Response) => {
 
 export const addItems = async (req: Request, res: Response) => {
     try {
-        const { userId } = req.user!;
+        const user  = req.user!;
+        console.log(user);
+        const userId = user._id;
         const stationId = req.body.stationId; 
         const queueItem = await StationQueue.findOne({
             StationRef: stationId,
