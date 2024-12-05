@@ -61,6 +61,7 @@ const StationSignUpForm = () => {
         {
           stationName,
           email,
+          type: "station",
           password,
           location,
           chargers: formattedChargers,

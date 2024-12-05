@@ -30,6 +30,12 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
+    if (!["user", "station"].includes(type)) {
+      return res
+        .status(400)
+        .json({ message: "Invalid type. Must be 'user' or 'station'." });
+    }
+
     // Check for existing user
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -114,6 +120,7 @@ export const registerUser = async (req: Request, res: Response) => {
       firstName,
       lastName,
       email,
+      type: "user",
       password: hashedPassword,
       vehicleType,
       vehicleNumber,
@@ -126,6 +133,23 @@ export const registerUser = async (req: Request, res: Response) => {
       process.env.JWT_SECRET!,
       { expiresIn: "1h" }
     );
+
+    const transactionData = {
+      from: "System", // Could be changed to a real sender if necessary
+      to: user._id.toString(),
+      data: JSON.stringify(user),
+      type: "SIGN_UP" as "SIGN_UP",
+    };
+
+    // Add the transaction using the blockchain controller function
+    try {
+      await addTransaction(transactionData);
+    } catch (transactionError) {
+      console.error("Blockchain Transaction Error:", transactionError);
+      return res
+        .status(500)
+        .json({ message: "Error recording transaction on the blockchain" });
+    }
 
     if (user) {
       return res
@@ -145,6 +169,16 @@ export const registerStation = async (req: Request, res: Response) => {
     req.body;
 
   console.log(req.body);
+  if (
+    !stationName ||
+    !email ||
+    !password ||
+    !location ||
+    !chargers ||
+    !placeId
+  ) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
 
   try {
     const stationExists = await Station.findOne({ email });
@@ -159,6 +193,7 @@ export const registerStation = async (req: Request, res: Response) => {
     const station = await Station.create({
       stationName,
       email,
+      type: "station",
       password: hashedPassword,
       location,
       chargers,
@@ -172,6 +207,23 @@ export const registerStation = async (req: Request, res: Response) => {
       process.env.JWT_SECRET!,
       { expiresIn: "1h" }
     );
+
+    const transactionData = {
+      from: "System", // Could be changed to a real sender if necessary
+      to: station._id.toString(),
+      data: JSON.stringify(station),
+      type: "SIGN_UP" as "SIGN_UP",
+    };
+
+    // Add the transaction using the blockchain controller function
+    try {
+      await addTransaction(transactionData);
+    } catch (transactionError) {
+      console.error("Blockchain Transaction Error:", transactionError);
+      return res
+        .status(500)
+        .json({ message: "Error recording transaction on the blockchain" });
+    }
 
     if (station) {
       return res

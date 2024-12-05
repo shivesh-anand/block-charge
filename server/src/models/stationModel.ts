@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Mongoose, Schema } from "mongoose";
 
 interface Charger {
   type: string;
@@ -11,6 +11,7 @@ interface QueueItem {
 }
 
 export interface IStation extends Document {
+  _id: mongoose.Types.ObjectId;
   stationName: string;
   email: string;
   password: string;

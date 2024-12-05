@@ -119,7 +119,7 @@ const UserSignUpForm = () => {
         value={vehicleNumber}
         onChange={(e) => setVehicleNumber(e.target.value)}
         placeholder="JH05AJ1234"
-        type="password"
+        type="text"
         variant="bordered"
         isDisabled={disableButton}
         isRequired
