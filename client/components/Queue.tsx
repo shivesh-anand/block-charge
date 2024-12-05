@@ -1,6 +1,6 @@
 import { Button } from "@nextui-org/button";
 import { Card, CardBody, CardHeader } from "@nextui-org/react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 
 const initialQueueItems = [
@@ -30,16 +30,122 @@ function Queue() {
   const [cancelLoadingStates, setCancelLoadingStates] = useState<
     Record<string, boolean>
   >({});
+  const Socket: any = useRef();
 
-  const handleVerifyButtonClick = (id: string) => {
+  const fetchQueueItems = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:5000/api/queue/fetch", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, 
+        },
+        body: JSON.stringify({ stationId: "668634e5158bf29d41fc6bbf" }), 
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch queue items");
+      }
+
+      const data = await response.json();
+      console.log(data.users);
+      setQueueItems(data.users || []);
+    } catch (error: any) {
+      console.error("Error fetching queue items:", error);
+      toast.error("Failed to fetch queue items");
+    }
+  };
+
+  const sendMessage = async (to: any) => {
+    const token = localStorage.getItem("token");
+    const stationId = "668634e5158bf29d41fc6bbf";
+  
+    if (!token) {
+      toast.error("User is not authenticated");
+      return;
+    }
+    console.log('TO:::', to._id);
+    try {
+      const response = await fetch("http://localhost:5000/api/queue/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, 
+        },
+        body: JSON.stringify({ stationId, userId: to._id }),
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
+        if (Socket.current && Socket.current.readyState === WebSocket.OPEN) {
+          Socket.current.send(
+            JSON.stringify({
+              from: stationId,
+              to: to._id,
+              text: "verify",
+              type: "Station",
+              success: true,
+            })
+          );
+          toast.success("Verification successful");
+        } else {
+          console.warn("WebSocket is not ready");
+        }
+      } else {
+        if (Socket.current && Socket.current.readyState === WebSocket.OPEN) {
+          Socket.current.send(
+            JSON.stringify({
+              from: stationId,
+              to: to._id,
+              text: "verify",
+              type: "Station",
+              success: false,
+            })
+          );
+        }
+        toast.error(result.message || "Verification failed");
+      }
+    } catch (error: any) {
+      console.error("Error during verification:", error);
+      toast.error("An error occurred during verification");
+    }
+  };
+  
+
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:5001');
+    Socket.current = ws;
+  
+    const initialize = async () => {
+      await fetchQueueItems();
+      const token = localStorage.getItem("token");
+      console.log('initialize: ', token);
+      ws.send(JSON.stringify({ from: '668634e5158bf29d41fc6bbf', to: '', text: 'Initialize', type: 'Station' }));
+    };
+  
+    ws.onopen = () => {
+      initialize();
+    };
+  
+    ws.onmessage = async (message) => {
+      console.log("WebSocket message received:", message.data);
+      await fetchQueueItems();
+    };
+  
+    return () => {
+      ws.close();
+      Socket.current = null;
+    };
+  }, []);
+  
+
+  const handleVerifyButtonClick = async (id: string) => {
     setLoadingStates((prev) => ({ ...prev, [id]: true }));
-
-    setTimeout(() => {
-      setLoadingStates((prev) => ({ ...prev, [id]: false }));
-      setQueueItems((prev) => prev.filter((item) => item._id !== id));
-
-      toast.success("Queue item verified successfully");
-    }, 2000);
+    await sendMessage(id);
+    setLoadingStates((prev) => ({ ...prev, [id]: false }));
+    await fetchQueueItems();
   };
   const handleCancelButtonClick = (id: string) => {
     setCancelLoadingStates((prev) => ({ ...prev, [id]: true }));
