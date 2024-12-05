@@ -9,6 +9,11 @@ interface JwtPayload {
     exp?: string
 }
 
+const getId = (token: string) => {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+    return decoded.userId;
+}
+
 export const setupWebSocketServer = () => {
     const wss = new WebSocketServer({ port: 5001 });
 
@@ -26,14 +31,22 @@ export const setupWebSocketServer = () => {
 
             if(text === 'Initialize') {
                 console.log(`A client connected ${from}`);
-                clients.set(from, ws);
                 console.log(clients.size);
+                if(type === 'User') {
+                    const userId = getId(from);
+                    if(userId){
+                        clients.set(userId, ws);
+                    }
+                } else {
+                    clients.set(from, ws);
+                }
             } else {
                 if(type === 'User') {
+                    const userId = getId(from);
                     const toSocket = clients.get(to);
                     if(toSocket) {
                         toSocket.send(JSON.stringify({
-                            from: from
+                            from: userId
                         }));
                     }
                 }

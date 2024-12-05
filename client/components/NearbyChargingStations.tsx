@@ -123,11 +123,12 @@ export default function NearbyChargingStations({
   };
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
     const ws = new WebSocket('ws://localhost:5001');
     Socket.current = ws;
 
     ws.onopen = () => {
-      ws.send(JSON.stringify({ from: '674b99bc35b111c33ef33dce', to: '668634e5158bf29d41fc6bbf', text: 'Initialize', type: 'User' }));
+      ws.send(JSON.stringify({ from: token, to: '668634e5158bf29d41fc6bbf', text: 'Initialize', type: 'User' }));
     };
 
     ws.onmessage = (message) => {
@@ -216,7 +217,7 @@ export default function NearbyChargingStations({
         if (Socket.current && Socket.current.readyState === WebSocket.OPEN) {
           Socket.current.send(
             JSON.stringify({
-              from: '674b99bc35b111c33ef33dce',
+              from: token,
               to: stationId,
               text: "verify",
               type: "User",

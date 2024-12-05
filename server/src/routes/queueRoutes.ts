@@ -10,6 +10,6 @@ const router = express.Router();
 
 router.post("/verify", verifyElement);
 router.post("/fetch", fetchUsers);
-router.post("/add", addItems);
+router.post("/add", protect, addItems);
 
 export default router;
