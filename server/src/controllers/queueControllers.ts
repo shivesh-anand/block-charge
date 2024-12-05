@@ -10,6 +10,7 @@ export const verifyElement = async (req: Request, res: Response) => {
     const queueItem = await StationQueue.findOne({
       StationRef: stationId,
       UserRef: userId,
+      success: false
     });
 
     if (!queueItem) {
